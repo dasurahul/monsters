@@ -2,31 +2,30 @@ import React from "react";
 import CardList from "../../components/card-list/card-list.component";
 import Search from "../../components/search/search.component";
 
+import { connect } from "react-redux";
+
+import { getUsers, searchUser } from "../../redux/user/user.action";
+
 import "./App.css";
 
 class App extends React.Component {
-  constructor() {
-    super();
-    this.state = {
-      users: [],
-      searchValue: "",
-    };
-  }
   componentDidMount() {
+    const { sendMonsters } = this.props;
     fetch("https://jsonplaceholder.typicode.com/users")
       .then((result) => result.json())
       .then((monsters) => {
-        this.setState({ users: monsters });
+        sendMonsters(monsters);
       });
   }
   handleOnChange = (event) => {
-    this.setState({ searchValue: event.target.value });
+    const { sendSearchValue } = this.props;
+    sendSearchValue(event.target.value);
   };
   render() {
-    const { users, searchValue } = this.state;
-    const filteredMonsters = users.filter((user) => {
-      return user.name.toLowerCase().includes(searchValue);
-    });
+    const { getMonsters, getSearchValue } = this.props;
+    const filteredMonsters = getMonsters.filter((monster) =>
+      monster.name.toLowerCase().includes(getSearchValue.toLowerCase())
+    );
     return (
       <div className="App">
         <h1>Monsters Rollodex</h1>
@@ -37,4 +36,14 @@ class App extends React.Component {
   }
 }
 
-export default App;
+const mapStateToProps = (state) => ({
+  getMonsters: state.userState.users,
+  getSearchValue: state.userState.searchValue,
+});
+
+const mapDisptachToProps = (dispatch) => ({
+  sendMonsters: (monsters) => dispatch(getUsers(monsters)),
+  sendSearchValue: (username) => dispatch(searchUser(username)),
+});
+
+export default connect(mapStateToProps, mapDisptachToProps)(App);
